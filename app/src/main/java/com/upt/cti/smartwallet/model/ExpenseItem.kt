@@ -1,9 +1,13 @@
 package com.upt.cti.smartwallet.model
 
-data class ExpenseItem(
-    val price: String = "",
-    val name : String? =  "",
-    val date : String? = "",
-    val time : String? = "",
-    val category : String? = "",
-)
+import java.io.Serializable
+
+class ExpenseItem(
+    var price: String = "",
+    var name: String? = "",
+    val date: String? = "",
+    val time: String? = "",
+    var category: String? = "",
+) : Serializable {
+
+}

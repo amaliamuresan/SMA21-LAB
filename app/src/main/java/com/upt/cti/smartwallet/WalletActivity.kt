@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -16,7 +17,7 @@ class WalletActivity : AppCompatActivity() {
 
     private lateinit var databaseReference: DatabaseReference
 
-    private var adapter = ExpensesAdapter()
+    private var adapter = ExpensesAdapter {itemView, expenseItem ->  onClick(itemView, expenseItem)}
 
     private var expenseList = MutableLiveData<List<ExpenseItem>>()
 
@@ -34,6 +35,8 @@ class WalletActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         getExpenses()
+
+
 
         addButton.setOnClickListener {
             val intent = Intent(this, AddExpensesActivity::class.java)
@@ -57,13 +60,26 @@ class WalletActivity : AppCompatActivity() {
                     child.getValue(ExpenseItem::class.java)?.let { expenses.add(it) }
                 }
                 Log.e("MESSAGE! ", expenses.toString())
+                expenseList.value = expenses
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.d("Firebase", "databaseError ${error.message}")
             }
         }
-        expenseList.value = expenses
         databaseReference.addValueEventListener(listener)
+    }
+
+    private fun onClick(view : View, expenseItem: ExpenseItem){
+        when(view.id) {
+            R.id.edit_button -> {
+                val intent = Intent(this, AddPaymentActivity::class.java)
+                intent.putExtra("EXPENSE_ITEM", expenseItem)
+                startActivity(intent)
+
+            }
+
+            R.id.remove_button -> {databaseReference.child("${expenseItem.date} ${expenseItem.time}").removeValue()}
+        }
     }
 }
