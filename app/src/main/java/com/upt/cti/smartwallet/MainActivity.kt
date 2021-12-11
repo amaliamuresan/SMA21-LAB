@@ -77,6 +77,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
             }
         }
+
+        if(!AppState.isNetworkAvailable(this)){
+            if(AppState.hasLocalStorage(this)) {
+
+            }
+        }
     }
 
     private fun getMonths() {

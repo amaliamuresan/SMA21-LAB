@@ -1,5 +1,6 @@
 package com.upt.cti.smartwallet
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,7 +11,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.upt.cti.smartwallet.model.ExpenseItem
 
-class AddPaymentActivity() : AppCompatActivity() {
+class AddPaymentActivity : AppCompatActivity() {
     lateinit var databaseReference: DatabaseReference
     lateinit var spinner: Spinner
     lateinit var priceEditText: EditText
@@ -61,10 +62,12 @@ class AddPaymentActivity() : AppCompatActivity() {
 
         saveButton.setOnClickListener {
             databaseReference.child("wallet").child("${expenseItem.date} ${expenseItem.time}").setValue(expenseItem)
+            startActivity(Intent(this, WalletActivity::class.java))
         }
 
         deleteButton.setOnClickListener {
             databaseReference.child("wallet").child("${expenseItem.date} ${expenseItem.time}").removeValue()
+            startActivity(Intent(this, WalletActivity::class.java))
         }
 
     }

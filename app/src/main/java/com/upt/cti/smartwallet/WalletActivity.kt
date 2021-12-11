@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -17,7 +18,8 @@ class WalletActivity : AppCompatActivity() {
 
     private lateinit var databaseReference: DatabaseReference
 
-    private var adapter = ExpensesAdapter {itemView, expenseItem ->  onClick(itemView, expenseItem)}
+    private var adapter =
+        ExpensesAdapter { itemView, expenseItem -> onClick(itemView, expenseItem) }
 
     private var expenseList = MutableLiveData<List<ExpenseItem>>()
 
@@ -46,9 +48,31 @@ class WalletActivity : AppCompatActivity() {
 //        adapter.items = getExpenses()
 
         expenseList.observe(this, {
-            if (expenseList.value != null)
+            if (expenseList.value != null) {
                 adapter.items = expenseList.value!!
+                adapter.notifyDataSetChanged()
+            }
+
         })
+
+        if (!AppState.isNetworkAvailable(this)) {
+            if (AppState.hasLocalStorage(this)) {
+                expenseList.value = AppState.loadFromLocalBackup(this)
+                Toast.makeText(
+                    this,
+                    "Found ${expenseList.value?.size} payments",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    "An internet connection should be established",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            databaseReference.child("wallet").keepSynced(true)
+        }
     }
 
     private fun getExpenses() {
@@ -70,8 +94,8 @@ class WalletActivity : AppCompatActivity() {
         databaseReference.addValueEventListener(listener)
     }
 
-    private fun onClick(view : View, expenseItem: ExpenseItem){
-        when(view.id) {
+    private fun onClick(view: View, expenseItem: ExpenseItem) {
+        when (view.id) {
             R.id.edit_button -> {
                 val intent = Intent(this, AddPaymentActivity::class.java)
                 intent.putExtra("EXPENSE_ITEM", expenseItem)
@@ -79,7 +103,9 @@ class WalletActivity : AppCompatActivity() {
 
             }
 
-            R.id.remove_button -> {databaseReference.child("${expenseItem.date} ${expenseItem.time}").removeValue()}
+            R.id.remove_button -> {
+                databaseReference.child("${expenseItem.date} ${expenseItem.time}").removeValue()
+            }
         }
     }
 }
