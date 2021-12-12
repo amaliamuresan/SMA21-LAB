@@ -1,10 +1,15 @@
 package com.upt.cti.smartwallet
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
 import com.upt.cti.smartwallet.model.MonthlyExpenses
@@ -19,6 +24,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var databaseReference: DatabaseReference
 
     var months: MutableList<String> = mutableListOf()
+
+    private lateinit var mAuth : FirebaseAuth
+    private lateinit var mAuthListener : FirebaseAuth.AuthStateListener
+
+
+    companion object {
+        val REQ_SIGNIN = 3
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,9 +91,11 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             }
         }
 
-        if(!AppState.isNetworkAvailable(this)){
-            if(AppState.hasLocalStorage(this)) {
-
+        mAuth = FirebaseAuth.getInstance()
+        mAuthListener = FirebaseAuth.AuthStateListener { firebaseAuth: FirebaseAuth ->
+            val user : FirebaseUser? = firebaseAuth.currentUser
+            if(user == null) {
+                startActivityForResult(Intent(this, SignUpActivity::class.java), REQ_SIGNIN)
             }
         }
     }
@@ -119,6 +134,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             }
         }
         databaseReference.addValueEventListener(listener)
+
+
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -136,4 +153,5 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     override fun onNothingSelected(parent: AdapterView<*>?) {
         parent?.setSelection(0)
     }
+
 }
